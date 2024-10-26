@@ -8,47 +8,30 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.home_work7.databinding.ItemCarBinding
 
-class CarAdapter(private val cars: List<Car>) :
-    RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
+class CarAdapter(
+    private val cars: List<Car>,
+    private val onClick: (Car) -> Unit
+) : RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
 
-    inner class CarViewHolder(val binding: ItemCarBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    inner class CarViewHolder(val binding: ItemCarBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(car: Car) {
+            binding.textViewCarName.text = car.name
+            Glide.with(binding.imageViewCar.context)
+                .load(car.imageUrl)
+                .into(binding.imageViewCar)
+
+            binding.root.setOnClickListener { onClick(car) }
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CarViewHolder {
-        val binding = ItemCarBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = ItemCarBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CarViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: CarViewHolder, position: Int) {
-        val car = cars[position]
-        holder.binding.textViewCarName.text = car.name
-
-        // Используем Glide для загрузки изображения
-        Glide.with(holder.itemView.context)
-            .load(car.imageUrl)
-            .into(holder.binding.imageViewCar)
-
-        // Обработка нажатия кнопки "Позвонить"
-        holder.binding.buttonCall.setOnClickListener {
-            val intent = Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:${car.phoneNumber}")
-            }
-            holder.itemView.context.startActivity(intent)
-        }
-
-        // Обработка нажатия кнопки "WhatsApp"
-        holder.binding.buttonWhatsApp.setOnClickListener {
-            val url = "https://api.whatsapp.com/send?phone=${car.phoneNumber}"
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse(url)
-            }
-            holder.itemView.context.startActivity(intent)
-        }
+        holder.bind(cars[position])
     }
 
-    override fun getItemCount(): Int {
-        return cars.size
-    }
+    override fun getItemCount() = cars.size
 }
